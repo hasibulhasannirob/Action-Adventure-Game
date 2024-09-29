@@ -12,11 +12,27 @@ public class Character : MonoBehaviour
     public float _gravity = -9.8f;
     private Animator _animator;
 
+    //For Enemy
+    public bool IsPlayer = true;
+    private UnityEngine.AI.NavMeshAgent _navMeshAgent;
+    private Transform TargetPlayer;
+
     private void Awake()
     {
-        _playerInput = GetComponent<PlayerInput>();
+        
         _cc = GetComponent<CharacterController>();
         _animator = GetComponent<Animator>();
+
+        if (!IsPlayer)
+        {
+            _navMeshAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+            TargetPlayer = GameObject.FindWithTag("Player").transform;
+            _navMeshAgent.speed = _moveSpeed;
+        }
+        else
+        {
+            _playerInput = GetComponent<PlayerInput>();
+        }
     }
 
     private void CalculatePlayerMovement()
@@ -37,21 +53,46 @@ public class Character : MonoBehaviour
         _animator.SetBool("AirBorne", !_cc.isGrounded);
     }
 
-    private void FixedUpdate()
+    private void CalculateEnemyMovement()
     {
-        CalculatePlayerMovement();
-
-        if (_cc.isGrounded == false)
+        if (Vector3.Distance(TargetPlayer.position, transform.position) >= _navMeshAgent.stoppingDistance)
         {
-            _verticalVelocity = _gravity;
+            _navMeshAgent.SetDestination(TargetPlayer.position);
+            _animator.SetFloat("Speed", 0.2f);
         }
         else
         {
-            _verticalVelocity = _gravity * 0.3f;
+            _navMeshAgent.SetDestination(transform.position);
+            _animator.SetFloat("Speed", 0f);
         }
+    }
 
-        _movementVelocity += _verticalVelocity * Vector3.up * Time.deltaTime;
+    private void FixedUpdate()
+    {
+        if (IsPlayer)
+        {
+            CalculatePlayerMovement();
+        }
+        else
+        {
+            CalculateEnemyMovement();
+        }
+        
+        if (IsPlayer)
+        {
+            if (_cc.isGrounded == false)
+            {
+                _verticalVelocity = _gravity;
+            }
+            else
+            {
+                _verticalVelocity = _gravity * 0.3f;
+            }
 
-        _cc.Move(_movementVelocity);
+            _movementVelocity += _verticalVelocity * Vector3.up * Time.deltaTime;
+
+            _cc.Move(_movementVelocity);
+        }
+        
     }
 }
