@@ -10,7 +10,7 @@ public class PlayerInput : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        HorizontalInput = Input.GetAxisRaw("Horizoltal");
+        HorizontalInput = Input.GetAxisRaw("Horizontal");
         VerticalInput = Input.GetAxisRaw("Vertical");
     }
 
