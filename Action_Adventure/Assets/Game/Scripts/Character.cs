@@ -157,7 +157,12 @@ public class Character : MonoBehaviour
             case CharacterState.Normal:
                 break;
             case CharacterState.Attacking:
+                if(_damageCaster != null)
+                {
+                    DisableDamageCaster();
+                }
                 break;
+            
         }
 
         switch (newState)
