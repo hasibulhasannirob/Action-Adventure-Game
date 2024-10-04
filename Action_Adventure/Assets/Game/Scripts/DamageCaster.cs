@@ -26,7 +26,7 @@ public class DamageCaster : MonoBehaviour
 
             if (targetCC != null)
             {
-                targetCC.ApplyDamage(damage);
+                targetCC.ApplyDamageCC(damage);
             }
 
             _damageTargetList.Add(other);

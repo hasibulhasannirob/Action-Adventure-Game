@@ -189,7 +189,7 @@ public class Character : MonoBehaviour
         SwitchStateTo(CharacterState.Normal);
     }
 
-    public void ApplyDamage(int damage, Vector3 attackerPos = new Vector3())
+    public void ApplyDamageCC(int damage, Vector3 attackerPos = new Vector3())
     {
         if (_health != null)
         {

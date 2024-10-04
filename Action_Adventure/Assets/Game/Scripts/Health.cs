@@ -10,6 +10,7 @@ public class Health : MonoBehaviour
 
     private void Awake()
     {
+        CurrentHealth = MaxHealth;
         _cc = GetComponent<Character>();
     }
 
