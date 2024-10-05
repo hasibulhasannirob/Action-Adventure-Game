@@ -272,7 +272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8954741b62fb6144b28fd8e32d78a55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 30
+  damage: 20
   TargetTag: Enemy
 --- !u!1001 &231751923
 PrefabInstance:
@@ -823,6 +823,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _moveSpeed: 2
   _gravity: -9.8
+  ItemToDrop: {fileID: 6082347486441140908, guid: 773778057908cb74d8663d835847109f, type: 3}
   IsPlayer: 0
   AttackSlideDuration: 0.4
   AttackSlideSpeed: 0.06
@@ -1205,6 +1206,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _moveSpeed: 5
   _gravity: -20
+  ItemToDrop: {fileID: 0}
   IsPlayer: 1
   AttackSlideDuration: 0.4
   AttackSlideSpeed: 0.06
