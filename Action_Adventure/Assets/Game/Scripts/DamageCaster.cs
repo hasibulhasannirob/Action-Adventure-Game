@@ -26,7 +26,7 @@ public class DamageCaster : MonoBehaviour
 
             if (targetCC != null)
             {
-                targetCC.ApplyDamageCC(damage);
+                targetCC.ApplyDamageCC(damage, transform.parent.position);
                 PlayerVFXManager playerVFXManager = transform.parent.GetComponent<PlayerVFXManager>();
 
                 if (playerVFXManager != null)
