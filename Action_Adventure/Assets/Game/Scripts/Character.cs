@@ -12,6 +12,8 @@ public class Character : MonoBehaviour
     public float _gravity = -9.8f;
     private Animator _animator;
     public GameObject ItemToDrop;
+    public int Coin;
+    public float attackingAnimationDuration;
 
     public bool IsInvincible;
     public float invincibleDuration = 2f;
@@ -136,6 +138,19 @@ public class Character : MonoBehaviour
                         float lerpTime = timePassed / AttackSlideDuration;
                         _movementVelocity = Vector3.Lerp(transform.forward * AttackSlideSpeed, Vector3.zero, lerpTime);
                     }
+
+                    if (_playerInput.MouseButtonDown && _cc.isGrounded)
+                    {
+                        string currentClipName = _animator.GetCurrentAnimatorClipInfo(0)[0].clip.name;
+                        attackingAnimationDuration = _animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
+
+                        if (currentClipName != "LittleAdventurerAndie_ATTACK_03" && attackingAnimationDuration > 0.5f && attackingAnimationDuration < 0.7f)
+                        {
+                            _playerInput.MouseButtonDown = false;
+                            SwitchStateTo(CharacterState.Attacking);
+                            CalculatePlayerMovement();
+                        }
+                    }
                 }
                 break;
             case CharacterState.Dead:
@@ -177,6 +192,7 @@ public class Character : MonoBehaviour
             _playerInput.MouseButtonDown = false;
         }
 
+        //exiting state
         switch (CurrentState)
         {
             case CharacterState.Normal:
@@ -185,6 +201,10 @@ public class Character : MonoBehaviour
                 if(_damageCaster != null)
                 {
                     DisableDamageCaster();
+                }
+                if (IsPlayer)
+                {
+                    GetComponent<PlayerVFXManager>().StopBlade();
                 }
                 break;
             case CharacterState.Dead:
@@ -333,5 +353,29 @@ public class Character : MonoBehaviour
         {
             Instantiate(ItemToDrop, transform.position, Quaternion.identity);
         }
+    }
+
+    public void PickUpItem(PickUp item)
+    {
+        switch(item.Type)
+        {
+            case PickUp.PickUpType.Heal:
+                AddHealth(item.Value);
+                break;
+            case PickUp.PickUpType.Coin:
+                AddCoin(item.Value);
+                break;
+        }
+    }
+
+    private void AddHealth(int health)
+    {
+        _health.AddHealth(health);
+        GetComponent<PlayerVFXManager>().PlayHealVFX();
+    }
+
+    private void AddCoin(int coin)
+    {
+        Coin += coin;
     }
 }
