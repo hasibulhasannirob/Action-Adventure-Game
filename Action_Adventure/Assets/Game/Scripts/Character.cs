@@ -13,6 +13,9 @@ public class Character : MonoBehaviour
     private Animator _animator;
     public GameObject ItemToDrop;
 
+    public bool IsInvincible;
+    public float invincibleDuration = 2f;
+
     //Damage caster
     private DamageCaster _damageCaster;
 
@@ -29,10 +32,13 @@ public class Character : MonoBehaviour
     public float AttackSlideDuration = 0.4f;
     public float AttackSlideSpeed = 0.06f;
 
+    //player impact
+    private Vector3 impacOnCharacter;
+
     //State Machine
     public enum CharacterState
     {
-        Normal, Attacking, Dead
+        Normal, Attacking, Dead, BeingHit
     }
 
     public CharacterState CurrentState;
@@ -123,7 +129,7 @@ public class Character : MonoBehaviour
 
                 if (IsPlayer)
                 {
-                    _movementVelocity = Vector3.zero;
+                   
                     if (Time.time < attackStartTime + AttackSlideDuration)
                     {
                         float timePassed = Time.time - attackStartTime;
@@ -134,6 +140,13 @@ public class Character : MonoBehaviour
                 break;
             case CharacterState.Dead:
                 return;
+            case CharacterState.BeingHit:
+                if (impacOnCharacter.magnitude > 0.2f)
+                {
+                    _movementVelocity = impacOnCharacter * Time.deltaTime;
+                }
+                impacOnCharacter = Vector3.Lerp(impacOnCharacter, Vector3.zero, Time.deltaTime * 5);
+                break;
         }
         
         
@@ -151,6 +164,7 @@ public class Character : MonoBehaviour
             _movementVelocity += _verticalVelocity * Vector3.up * Time.deltaTime;
 
             _cc.Move(_movementVelocity);
+            _movementVelocity = Vector3.zero;
         }
         
     }
@@ -175,9 +189,12 @@ public class Character : MonoBehaviour
                 break;
             case CharacterState.Dead:
                 return;
+            case CharacterState.BeingHit:
+                break;
             
         }
 
+        //entering state
         switch (newState)
         {
             case CharacterState.Normal:
@@ -201,6 +218,14 @@ public class Character : MonoBehaviour
                 _animator.SetTrigger("Dead");
                 StartCoroutine(MaterialDissolve());
                 break;
+            case CharacterState.BeingHit:
+                _animator.SetTrigger("BeingHit");
+                if(IsPlayer)
+                {
+                    IsInvincible = true;
+                    StartCoroutine(DelayCancelInvincible());
+                }
+                break;
         }
 
         CurrentState = newState;
@@ -212,8 +237,18 @@ public class Character : MonoBehaviour
         SwitchStateTo(CharacterState.Normal);
     }
 
+    public void BeingHitAnimationEnds()
+    {
+        SwitchStateTo(CharacterState.Normal);
+    }
+
     public void ApplyDamageCC(int damage, Vector3 attackerPos = new Vector3())
     {
+        if (IsInvincible)
+        {
+            return;
+        }
+
         if (_health != null)
         {
             _health.ApplyDamage(damage);
@@ -225,6 +260,26 @@ public class Character : MonoBehaviour
         }
 
         StartCoroutine(MaterialBlink());
+
+        if (IsPlayer)
+        {
+            SwitchStateTo(CharacterState.BeingHit);
+            AddImpact(attackerPos, 10f);
+        }
+    }
+
+    IEnumerator DelayCancelInvincible()
+    {
+        yield return new WaitForSeconds(invincibleDuration);
+        IsInvincible = false;
+    }
+
+    private void AddImpact(Vector3 attackerPos, float force)
+    {
+        Vector3 impactDir = transform.position - attackerPos;
+        impactDir.Normalize();
+        impactDir.y = 0;
+        impacOnCharacter = impactDir * force;
     }
 
     public void EnableDamageCaster()
