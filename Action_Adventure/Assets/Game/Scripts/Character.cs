@@ -14,6 +14,7 @@ public class Character : MonoBehaviour
     public GameObject ItemToDrop;
     public int Coin;
     public float attackingAnimationDuration;
+    public float SlideSpeed = 9f;
 
     public bool IsInvincible;
     public float invincibleDuration = 2f;
@@ -40,7 +41,7 @@ public class Character : MonoBehaviour
     //State Machine
     public enum CharacterState
     {
-        Normal, Attacking, Dead, BeingHit
+        Normal, Attacking, Dead, BeingHit, Slide
     }
 
     public CharacterState CurrentState;
@@ -78,6 +79,11 @@ public class Character : MonoBehaviour
         if (_playerInput.MouseButtonDown && _cc.isGrounded)
         {
             SwitchStateTo(CharacterState.Attacking);
+            return;
+        } 
+        else if (_playerInput.SpaceKeyDown && _cc.isGrounded)
+        {
+            SwitchStateTo(CharacterState.Slide);
             return;
         }
 
@@ -162,6 +168,9 @@ public class Character : MonoBehaviour
                 }
                 impacOnCharacter = Vector3.Lerp(impacOnCharacter, Vector3.zero, Time.deltaTime * 5);
                 break;
+            case CharacterState.Slide:
+                _movementVelocity = transform.forward * SlideSpeed * Time.deltaTime;
+                break;
         }
         
         
@@ -189,7 +198,7 @@ public class Character : MonoBehaviour
         //clear cache
         if (IsPlayer)
         {
-            _playerInput.MouseButtonDown = false;
+            _playerInput.ClearCache();
         }
 
         //exiting state
@@ -210,6 +219,8 @@ public class Character : MonoBehaviour
             case CharacterState.Dead:
                 return;
             case CharacterState.BeingHit:
+                break;
+            case CharacterState.Slide:
                 break;
             
         }
@@ -246,10 +257,18 @@ public class Character : MonoBehaviour
                     StartCoroutine(DelayCancelInvincible());
                 }
                 break;
+            case CharacterState.Slide:
+                _animator.SetTrigger("Slide");
+                break;
         }
 
         CurrentState = newState;
         //Debug.Log("Switched to " + CurrentState);
+    }
+
+    public void SlideAnimationEnds()
+    {
+        SwitchStateTo(CharacterState.Normal);
     }
 
     public void AttackAnimationEnds()
@@ -377,5 +396,13 @@ public class Character : MonoBehaviour
     private void AddCoin(int coin)
     {
         Coin += coin;
+    }
+
+    public void RotateToTarget()
+    {
+        if (CurrentState != CharacterState.Dead)
+        {
+            transform.LookAt(TargetPlayer, Vector3.up);
+        }
     }
 }
